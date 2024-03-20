@@ -87,3 +87,24 @@ def mindist(Q, MBR):
         elif Q[i] < MBR[i][0]:
             mindist += (MBR[i][0] - Q[i])**2
     return np.sqrt(mindist)
+
+def lb_kim(sequence1, sequence2):
+    # Extract features
+    start1, end1, min1, max1 = sequence1[0], sequence1[-1], min(sequence1), max(sequence1)
+    start2, end2, min2, max2 = sequence2[0], sequence2[-1], min(sequence2), max(sequence2)
+    
+    # Calculate lower bound
+    lb = max((start1 - start2)**2, (end1 - end2)**2, (min1 - min2)**2, (max1 - max2)**2)
+    return lb
+
+def lb_yi(sequence1, sequence2):
+    max2 = max(sequence2)
+    min2 = min(sequence2)
+    
+    lb_sum = 0
+    for point in sequence1:
+        if point > max2:
+            lb_sum += (point - max2)**2
+        elif point < min2:
+            lb_sum += (min2 - point)**2
+    return lb_sum
