@@ -94,3 +94,15 @@ def plot_range_search_results(query_sequence, range_search_results, epsilon=10):
     plt.xlabel('Time')
     plt.ylabel('Value')
     plt.show()
+
+def plot_tighness(lengths, avg_tightness_keogh, avg_tightness_kim, avg_tightness_yi):
+    plt.figure(figsize=(10, 6))
+    plt.plot(lengths, avg_tightness_keogh, label='Keogh', marker='o')
+    plt.plot(lengths, avg_tightness_kim, label='Kim', marker='x')
+    plt.plot(lengths, avg_tightness_yi, label='Yi', marker='s')
+    plt.xlabel('Query Length')
+    plt.ylabel('Average Tightness of Lower Bound (T)')
+    plt.title('Tightness of Lower Bound vs Query Length')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
