@@ -8,6 +8,16 @@ Author:
 import numpy as np
 
 def dtw_distance(s1, s2):
+    """
+    Compute the Dynamic Time Warping distance between two time series.
+
+    Parameters:
+    - s1: the first time series
+    - s2: the second time series
+
+    Returns:
+    - The DTW distance between s1 and s2
+    """
     n, m = len(s1), len(s2)
     dp = np.zeros((n+1, m+1))
     for i in range(1, n+1):
@@ -17,13 +27,61 @@ def dtw_distance(s1, s2):
     dp[0][0] = 0
     for i in range(1, n+1):
         for j in range(1, m+1):
-            cost = (s1[i-1] - s2[j-1]) ** 2
+            cost = (s1[i-1] - s2[j-1]) ** 2 # euclidean distance
             dp[i][j] = cost + min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1])
     return np.sqrt(dp[n][m])
+
+def lb_kim(s1, s2):
+    """
+    Compute the LB_Kim lower bounding measure between two time series.
+
+    Parameters:
+    - s1: the first time series
+    - s2: the second time series
+
+    Returns:
+    - The LB_Kim lower bound between s1 and s2
+    """
+    start1, end1, min1, max1 = s1[0], s1[-1], min(s1), max(s1)
+    start2, end2, min2, max2 = s2[0], s2[-1], min(s2), max(s2)
+    
+    # Calculate lower bound
+    lb = max((start1 - start2)**2, (end1 - end2)**2, (min1 - min2)**2, (max1 - max2)**2)
+    return lb
+
+def lb_yi(s1, s2):
+    """
+    Compute the LB_YI lower bounding measure between two time series.
+
+    Parameters:
+    - s1: the first time series
+    - s2: the second time series
+
+    Returns:
+    - The LB_YI lower bound between s1 and s2
+    """
+    max2 = max(s2)
+    min2 = min(s2)
+    
+    lb_sum = 0
+    for point in s1:
+        if point > max2:
+            lb_sum += (point - max2)**2
+        elif point < min2:
+            lb_sum += (min2 - point)**2
+    return lb_sum
 
 def lb_keogh(s1, s2, r):
     """
     Calculate the LB_Keogh lower bound between two time series.
+
+    Parameters:
+    - s1: the first time series
+    - s2: the second time series
+    - r: the window size
+    
+    Returns:
+    - The LB_Keogh lower bound between s1 and s2
     """
     LB_sum = 0
     for ind, i in enumerate(s1):
@@ -38,25 +96,40 @@ def lb_keogh(s1, s2, r):
 
     return np.sqrt(LB_sum)
 
-def paa(data, bins):
+def paa(timeSeries, dims): 
     """
-    Compute the Piecewise Aggregate Approximation (PAA) of a time series
+    Compute the Piecewise Aggregate Approximation (PAA) of a time series.
+
+    Parameters:
+    - timeSeries: the time series
+    - dims: the number of dimensions
+
+    Returns:
+    - The PAA representation of the time series
     """
     # Calculate the length of the time series and the size of each segment
-    length = len(data)
-    step = length // bins
+    length = len(timeSeries)
+    step = length // dims
     
     # Calculate the mean of each segment
-    means = [np.mean(data[i:i+step]) for i in range(0, length, step)]
+    means = [np.mean(timeSeries[i:i+step]) for i in range(0, length, step)]
     
     # Repeat the means for each segment
     paa = np.repeat(means, step)
     
     return paa
 
-def lb_paa(Q, C_bar, U_hat, L_hat):
+def lb_paa(C_bar, U_hat, L_hat):
     """
     Calculate the LB_PAA lower bounding measure between a query and a candidate time series in PAA representation.
+
+    Parameters:
+    - C_bar: the candidate time series in PAA representation
+    - U_hat: the upper bound in PAA representation
+    - L_hat: the lower bound in PAA representation
+
+    Returns:
+    - The LB_PAA lower bound between the query and the candidate time series
     """
     LB_sum = 0
     for i in range(len(C_bar)):
@@ -66,12 +139,20 @@ def lb_paa(Q, C_bar, U_hat, L_hat):
             LB_sum += (C_bar[i] - L_hat[i])**2
     return np.sqrt(LB_sum)
 
-def create_paa_bounds(x, r, dim):
+def create_paa_bounds(timeSeries, r, dim):
     """
     Create the Piecewise Aggregate Approximation bounds for a time series.
+
+    Parameters:
+    - timeSeries: the time series
+    - r: the window size
+    - dim: the number of dimensions
+
+    Returns:
+    - The upper and lower bounds in PAA representation
     """
-    U = [max(x[max(i-r, 0):min(i+r+1, len(x))]) for i in range(len(x))]
-    L = [min(x[max(i-r, 0):min(i+r+1, len(x))]) for i in range(len(x))]
+    U = [max(timeSeries[max(i-r, 0):min(i+r+1, len(timeSeries))]) for i in range(len(timeSeries))]
+    L = [min(timeSeries[max(i-r, 0):min(i+r+1, len(timeSeries))]) for i in range(len(timeSeries))]
     U_hat = paa(U, dim)
     L_hat = paa(L, dim)
     return U_hat, L_hat
@@ -79,6 +160,13 @@ def create_paa_bounds(x, r, dim):
 def mindist(Q, MBR):
     """
     Calculate the minimum distance between a query and a Minimum Bounding Rectangle (MBR).
+
+    Parameters:
+    - Q: the query point
+    - MBR: the Minimum Bounding Rectangle
+
+    Returns:
+    - The minimum distance between the query and the MBR
     """
     mindist = 0
     for i in range(len(Q)):
@@ -88,23 +176,3 @@ def mindist(Q, MBR):
             mindist += (MBR[i][0] - Q[i])**2
     return np.sqrt(mindist)
 
-def lb_kim(sequence1, sequence2):
-    # Extract features
-    start1, end1, min1, max1 = sequence1[0], sequence1[-1], min(sequence1), max(sequence1)
-    start2, end2, min2, max2 = sequence2[0], sequence2[-1], min(sequence2), max(sequence2)
-    
-    # Calculate lower bound
-    lb = max((start1 - start2)**2, (end1 - end2)**2, (min1 - min2)**2, (max1 - max2)**2)
-    return lb
-
-def lb_yi(sequence1, sequence2):
-    max2 = max(sequence2)
-    min2 = min(sequence2)
-    
-    lb_sum = 0
-    for point in sequence1:
-        if point > max2:
-            lb_sum += (point - max2)**2
-        elif point < min2:
-            lb_sum += (min2 - point)**2
-    return lb_sum
