@@ -1,36 +1,86 @@
-from dtw_functions import dtw_distance, lb_keogh
+from dtw_functions import dtw_distance, lb_keogh, lb_yi, lb_kim
 import numpy as np
 
-def perform_experiment_T(dataset, lb_func, num_sequences, sequence_length, r=3):
-    results = []
-    # Generate indices for starting positions of sequences
-    indices = np.random.choice(len(dataset) - sequence_length, num_sequences, replace=False)
+def compute_T(dataset):
+    num_sequences = len(dataset)
+    num_comparisons = int(num_sequences * (num_sequences - 1) / 2)
     
-    for i in range(num_sequences - 1):
-        for j in range(i + 1, num_sequences):
-            # Select two random contiguous sequences from the dataset
-            seq1 = dataset[indices[i]:indices[i] + sequence_length]
-            seq2 = dataset[indices[j]:indices[j] + sequence_length]
-
-            # Calculate lower bounding distance and actual DTW distance
-            if lb_func == lb_keogh:
-                lb = lb_func(seq1, seq2, r)
-            else:
-                lb = lb_func(seq1, seq2)
-            dtw_dist = dtw_distance(seq1, seq2)
-
-            # Calculate the tightness of the lower bound
-            T = lb / dtw_dist if dtw_dist != 0 else 0
-            results.append(T)
-
-    return np.mean(results)
-
+    # Initialize arrays to store distances
+    true_distances = np.zeros(num_comparisons)
+    LB_Yi_distances = np.zeros(num_comparisons)
+    LB_Kim_distances = np.zeros(num_comparisons)
+    LB_Keogh_distances = np.zeros(num_comparisons)
     
-# Perform the experiment for different query lengths
-def perform_experiment_for_lengths(dataset, lb_func, num_sequences, lengths, step, r=3):
-    avg_tightness = []
+    idx = 0
+    for i in range(num_sequences):
+        for j in range(i+1, num_sequences):
+            # Compute true DTW distance
+            true_distances[idx] = dtw_distance(dataset[i], dataset[j])
+            
+            # Compute lower bound distances
+            LB_Yi_distances[idx] = lb_yi(dataset[i], dataset[j])
+            LB_Kim_distances[idx] = lb_kim(dataset[i], dataset[j])
+            LB_Keogh_distances[idx] = lb_keogh(dataset[i], dataset[j], r=3)
+            
+            idx += 1
+    
+    # Calculate the ratio T for each lower bounding function
+    T_Yi = np.mean(np.minimum(1, LB_Yi_distances / true_distances))
+    T_Kim = np.mean(np.minimum(1, LB_Kim_distances / true_distances))
+    T_Keogh = np.mean(np.minimum(1, LB_Keogh_distances / true_distances))
+    
+    return T_Yi, T_Kim, T_Keogh
 
-    for length in lengths:
-        avg_tightness.append(perform_experiment_T(dataset, lb_func, num_sequences, length, r))
+def perform_experiment_T(dataset, query_lengths, sample_size=50):
+    T_results = {length: {'yi': [], 'kim': [], 'keogh': []} for length in query_lengths}
 
-    return lengths, avg_tightness
+    for length in query_lengths:
+        sequences = [sequence[:length] for sequence in dataset[np.random.choice(len(dataset), sample_size, replace=False)]]
+
+        T_results[length]['yi'], T_results[length]['kim'], T_results[length]['keogh'] = compute_T(sequences)
+
+    return T_results
+
+
+def compute_P(query, dataset):
+    """
+    Compute the Pruning Power (P) for each method.
+    """
+    LB_Yi_pruned_count = 0
+    LB_Kim_pruned_count = 0
+    LB_Keogh_pruned_count = 0
+    
+    for query_sequence in query:
+
+        other_sequences = np.delete(dataset, np.where(dataset == query_sequence)[0], axis=0)
+        
+        # Calculate the true DTW distance
+        true_distances = [dtw_distance(query_sequence, other_sequence) for other_sequence in other_sequences]
+        
+        LB_Yi_distances = [lb_yi(query_sequence, other_sequence) for other_sequence in other_sequences]
+        LB_Kim_distances = [lb_kim(query_sequence, other_sequence) for other_sequence in other_sequences]
+        LB_Keogh_distances = [lb_keogh(query_sequence, other_sequence, r=3) for other_sequence in other_sequences]
+
+        # Find the nearest match using the true DTW distance
+        nearest_match = np.argmin(true_distances)
+
+        # Find the nearest match using the LB_Yi distance
+        nearest_match_Yi = np.argmin(LB_Yi_distances)
+        nearest_match_Kim = np.argmin(LB_Kim_distances)
+        nearest_match_Keogh = np.argmin(LB_Keogh_distances)
+
+        # If the nearest match using the LB_Yi distance is the same as the nearest match using the true DTW distance
+        # then we have pruned the search space
+        if nearest_match_Yi == nearest_match:
+            LB_Yi_pruned_count += 1
+        if nearest_match_Kim == nearest_match:
+            LB_Kim_pruned_count += 1
+        if nearest_match_Keogh == nearest_match:
+            LB_Keogh_pruned_count += 1
+
+    # Calculate the Pruning Power (P) for each method
+    P_Yi = LB_Yi_pruned_count / len(query)
+    P_Kim = LB_Kim_pruned_count / len(query)
+    P_Keogh = LB_Keogh_pruned_count / len(query)
+
+    return P_Yi, P_Kim, P_Keogh

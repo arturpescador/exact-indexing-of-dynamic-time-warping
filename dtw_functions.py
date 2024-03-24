@@ -60,8 +60,8 @@ def lb_yi(s1, s2):
     Returns:
     - The LB_YI lower bound between s1 and s2
     """
-    max2 = max(s2)
-    min2 = min(s2)
+    max2 = np.max(s2)
+    min2 = np.min(s2)
     
     lb_sum = 0
     for point in s1:
@@ -69,7 +69,7 @@ def lb_yi(s1, s2):
             lb_sum += (point - max2)**2
         elif point < min2:
             lb_sum += (min2 - point)**2
-    return lb_sum
+    return np.sqrt(lb_sum)
 
 def lb_keogh(s1, s2, r):
     """
@@ -83,9 +83,11 @@ def lb_keogh(s1, s2, r):
     Returns:
     - The LB_Keogh lower bound between s1 and s2
     """
+    s1 = np.array(s1)
+    s2 = np.array(s2)
+    
     LB_sum = 0
     for ind, i in enumerate(s1):
-
         lower_bound = np.min(s2[(max(0, ind - r)):(min(len(s2), ind + r + 1))])
         upper_bound = np.max(s2[(max(0, ind - r)):(min(len(s2), ind + r + 1))])
 

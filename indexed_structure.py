@@ -17,7 +17,7 @@ class Node:
         self.entries.append(entry)
 
 class Entry:
-    def __init__(self, paa_representation, original_sequence=None, mbr=None):
+    def __init__(self, paa_representation, original_sequence=None, mbr=None, lb_distance=np.inf):
         self.paa_representation = paa_representation
         self.original_sequence = original_sequence
         self.mbr = mbr

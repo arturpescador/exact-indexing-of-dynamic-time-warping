@@ -48,6 +48,28 @@ def range_search(query_paa, epsilon, node, query_sequence, U_hat, L_hat):
     if not node.is_leaf:
         # If it's a non-leaf node, recurse on its children.
         for child in node.entries:
+            # mindist should be defined elsewhere to work with PAA representations
+            if mindist(query_paa, child.mbr) <= epsilon:
+                # child is actually another node, so we pass it on to the next recursion level
+                results.extend(range_search(query_paa, epsilon, child, query_sequence, U_hat, L_hat))
+    else:
+        # If it's a leaf node, check all PAA points in the node.
+        for entry in node.entries:
+            # lb_paa should be defined elsewhere to calculate the lower-bounding distance using PAA
+            if lb_paa(entry.paa_representation, U_hat, L_hat) <= epsilon:
+                # dtw_distance should be defined elsewhere to calculate the actual DTW distance
+                if dtw_distance(query_sequence, entry.original_sequence) <= epsilon:
+                    results.append(entry.original_sequence)
+    
+    return results
+"""
+
+def range_search(query_paa, epsilon, node, query_sequence, U_hat, L_hat):
+    results = []
+
+    if not node.is_leaf:
+        # If it's a non-leaf node, recurse on its children.
+        for child in node.entries:
             if mindist(query_paa, child.mbr) <= epsilon:
                 results.extend(range_search(query_paa, epsilon, child))
     else:
@@ -59,4 +81,4 @@ def range_search(query_paa, epsilon, node, query_sequence, U_hat, L_hat):
                     results.append(entry.original_sequence)
     
     return results
-
+"""
