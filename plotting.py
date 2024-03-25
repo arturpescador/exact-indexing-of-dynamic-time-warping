@@ -21,7 +21,6 @@ def plot_timeseries(time_step, sunspots, figsize=(10, 6), label=None, Upper=None
     plt.show()
 
 def plot_query_database_with_bounds(x, y, U, L):
-
     plt.figure(figsize=(14, 7))
     plt.plot(x, label='Candidate Sequence (C)', color='blue', linestyle='--')
     plt.plot(y, label='Original Sequence (Q)', color='black', linestyle='--')

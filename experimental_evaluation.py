@@ -1,7 +1,27 @@
+"""
+This file contains the implementation of the experimental evaluation of the lower bounding functions (T and P).
+
+Author:
+- Artur Dandolini Pescador
+"""
+
 from dtw_functions import dtw_distance, lb_keogh, lb_yi, lb_kim
 import numpy as np
 
 def compute_T(dataset):
+    """
+    Compute the ratio T for each lower bounding function.
+
+    T 
+
+    Parameters:
+    - dataset: the dataset of time series sequences
+    
+    Returns:
+    - T_Yi: the ratio T for the LB_Yi function
+    - T_Kim: the ratio T for the LB_Kim function
+    - T_Keogh: the ratio T for the LB_Keogh function
+    """
     num_sequences = len(dataset)
     num_comparisons = int(num_sequences * (num_sequences - 1) / 2)
     

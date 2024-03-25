@@ -170,6 +170,9 @@ def mindist(Q, MBR):
     Returns:
     - The minimum distance between the query and the MBR
     """
+    # I'm assuming a siple MBR where each dimension has the same fixed width
+    # mbr_width = 0.5
+    # return [(paa - mbr_width, paa + mbr_width) for paa in paa_representation]
     mindist = 0
     for i in range(len(Q)):
         if Q[i] > MBR[i][1]:
@@ -177,4 +180,6 @@ def mindist(Q, MBR):
         elif Q[i] < MBR[i][0]:
             mindist += (MBR[i][0] - Q[i])**2
     return np.sqrt(mindist)
+
+
 

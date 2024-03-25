@@ -10,7 +10,7 @@ import heapq
 
 class Node:
     def __init__(self, is_leaf=False):
-        self.is_leaf = is_leaf
+        self.is_leaf = is_leaf # boolean
         self.entries = []
 
     def add_entry(self, entry):
@@ -18,13 +18,13 @@ class Node:
 
 class Entry:
     def __init__(self, paa_representation, original_sequence=None, mbr=None, lb_distance=np.inf):
-        self.paa_representation = paa_representation
-        self.original_sequence = original_sequence
-        self.mbr = mbr
+        self.paa_representation = paa_representation # PAA
+        self.original_sequence = original_sequence # Original time series sequence
+        self.mbr = mbr # MBR
 
 class IndexedStructure:
     def __init__(self, paa_size):
-        self.root = Node(is_leaf=True)  # Assuming root is leaf for simplicity
+        self.root = Node(is_leaf=True)  # Assuming root is leaf node
         self.paa_size = paa_size
 
     def paa(self, timeseries):
@@ -55,6 +55,8 @@ class IndexedStructure:
         self.root.add_entry(entry)
 
     def create_mbr(self, paa_representation):
-        # Assuming a simple MBR where each dimension has the same fixed width
-        mbr_width = 0.5  # This is a chosen parameter that defines the MBR width
-        return [(paa - mbr_width, paa + mbr_width) for paa in paa_representation]
+        mbr = np.zeros((self.paa_size, 2))
+        for i in range(self.paa_size):
+            mbr[i][0] = paa_representation[i]
+            mbr[i][1] = paa_representation[i]
+        return mbr
