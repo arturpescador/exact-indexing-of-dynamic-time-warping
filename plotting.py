@@ -81,10 +81,8 @@ def plot_matches_knn_search(query_sequence, knn_search_results):
 def plot_range_search_results(query_sequence, range_search_results, epsilon=10):
     plt.figure(figsize=(14, 7))
 
-    # Plot the query sequence
     plt.plot(query_sequence, label='Query Sequence', color='black', linewidth=5)
 
-    # Plot each sequence from the range search results
     for i, sequence in enumerate(range_search_results, start=1):
         plt.plot(sequence, label=f'Match {i}')
 

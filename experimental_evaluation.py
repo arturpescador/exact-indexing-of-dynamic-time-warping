@@ -12,7 +12,7 @@ def compute_T(dataset):
     """
     Compute the ratio T for each lower bounding function.
 
-    T 
+    T = LB_distance / True_distance
 
     Parameters:
     - dataset: the dataset of time series sequences
@@ -65,6 +65,17 @@ def perform_experiment_T(dataset, query_lengths, sample_size=50):
 def compute_P(query, dataset):
     """
     Compute the Pruning Power (P) for each method.
+
+    P = Number of Objects that do not require DTW / Total Number of Objects
+
+    Parameters:
+    - query: the query sequence
+    - dataset: the dataset of time series sequences
+
+    Returns:
+    - P_Yi: the Pruning Power for the LB_Yi function
+    - P_Kim: the Pruning Power for the LB_Kim function
+    - P_Keogh: the Pruning Power for the LB_Keogh function
     """
     LB_Yi_pruned_count = 0
     LB_Kim_pruned_count = 0

@@ -6,7 +6,6 @@ Author:
 """
 
 import numpy as np
-import heapq
 
 class Node:
     def __init__(self, is_leaf=False):
@@ -14,6 +13,7 @@ class Node:
         self.entries = []
 
     def add_entry(self, entry):
+        """Add an entry to the node."""
         self.entries.append(entry)
 
 class Entry:
@@ -37,26 +37,24 @@ class IndexedStructure:
             paa[i] = np.mean(timeseries[start:end])
         return paa
     
-    #def create_paa_bounds(self, timeseries, bins, paa_size):
-    #    paa_representation = self.paa(timeseries)
-    #    U_hat = np.zeros(paa_size)
-    #    L_hat = np.zeros(paa_size)
-    #    for i in range(paa_size):
-    #        start = max(0, i - bins)
-    #        end = min(paa_size, i + bins)
-    #        U_hat[i] = np.max(paa_representation[start:end])
-    #        L_hat[i] = np.min(paa_representation[start:end])
-    #    return U_hat, L_hat
-
     def insert(self, timeseries):
+        """Insert a time series into the indexed structure."""
         paa_representation = self.paa(timeseries)
         entry = Entry(paa_representation, original_sequence=timeseries)
         entry.mbr = self.create_mbr(paa_representation)  # Create MBR during insertion
         self.root.add_entry(entry)
 
     def create_mbr(self, paa_representation):
+        """Create a Minimum Bounding Rectangle (MBR) for a PAA representation."""
         mbr = np.zeros((self.paa_size, 2))
         for i in range(self.paa_size):
             mbr[i][0] = paa_representation[i]
             mbr[i][1] = paa_representation[i]
         return mbr
+    
+    def retrieve_full_sequence(self, paa_representation):
+        """Retrieve the full sequence from the indexed structure."""
+        for entry in self.root.entries:
+            if np.array_equal(entry.paa_representation, paa_representation):
+                return entry.original_sequence
+        return None
