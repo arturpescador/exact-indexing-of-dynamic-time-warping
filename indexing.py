@@ -77,5 +77,8 @@ def range_search(query_paa, epsilon, node, query_sequence, U_hat, L_hat):
             if lb_paa(entry.paa_representation, U_hat, L_hat) <= epsilon:
                 if dtw_distance(query_sequence, entry.original_sequence) <= epsilon:
                     results.append(entry.original_sequence)
+
+    # order the results by distance
+    results.sort(key=lambda x: dtw_distance(query_sequence, x))
     
     return results
