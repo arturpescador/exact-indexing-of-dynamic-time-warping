@@ -6,6 +6,7 @@ Author:
 """
 
 import matplotlib.pyplot as plt
+from dtw_functions import dtw_distance
 
 def plot_timeseries(time_step, sunspots, figsize=(10, 6), label=None, Upper=None, Lower=None):
     plt.figure(figsize=figsize)
@@ -18,6 +19,7 @@ def plot_timeseries(time_step, sunspots, figsize=(10, 6), label=None, Upper=None
     plt.ylabel('Sunspots')
     plt.title('Monthly Mean Total Sunspot Number')
     plt.legend()
+    plt.grid(True)
     plt.show()
 
 def plot_query_database_with_bounds(x, y, U, L):
@@ -70,12 +72,13 @@ def plot_matches_knn_search(query_sequence, knn_search_results):
 
     # Plot each matching sequence from the K-NN search results
     for i, (sequence, distance) in enumerate(knn_search_results):
-        plt.plot(sequence, label=f'Match {i+1} (Distance: {distance:.2f})')
+        plt.plot(sequence, label=f'Match {i+1} (Distance (dtw): {distance:.2f})')
 
     plt.title('K-NN Search Results')
     plt.legend()
     plt.xlabel('Time')
     plt.ylabel('Value')
+    plt.grid(True)
     plt.show()
 
 def plot_range_search_results(query_sequence, range_search_results, epsilon=10):
@@ -84,12 +87,14 @@ def plot_range_search_results(query_sequence, range_search_results, epsilon=10):
     plt.plot(query_sequence, label='Query Sequence', color='black', linewidth=5)
 
     for i, sequence in enumerate(range_search_results, start=1):
-        plt.plot(sequence, label=f'Match {i}')
+        distance = dtw_distance(query_sequence, sequence)
+        plt.plot(sequence, label=f'Match {i} (Distance (dtw): {distance:.2f})')
 
     plt.title(f'Range Search Results (±{epsilon} range)')
     plt.legend()
     plt.xlabel('Time')
     plt.ylabel('Value')
+    plt.grid(True)
     plt.show()
 
 def plot_tighness(lengths, avg_tightness_keogh, avg_tightness_kim, avg_tightness_yi):

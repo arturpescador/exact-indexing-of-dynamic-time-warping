@@ -98,28 +98,42 @@ def lb_keogh(s1, s2, r):
 
     return np.sqrt(LB_sum)
 
-def paa(timeSeries, dims): 
+def paa(time_series, dims):
     """
     Compute the Piecewise Aggregate Approximation (PAA) of a time series.
 
     Parameters:
-    - timeSeries: the time series
+    - time_series: the time series
     - dims: the number of dimensions
 
     Returns:
     - The PAA representation of the time series
     """
-    # Calculate the length of the time series and the size of each segment
-    length = len(timeSeries)
-    step = length // dims
+    length = len(time_series)
+    segment_length = length / dims
     
-    # Calculate the mean of each segment
-    means = [np.mean(timeSeries[i:i+step]) for i in range(0, length, step)]
+    # Initialize an array to hold the PAA representation
+    paa_representation = []
     
-    # Repeat the means for each segment
-    paa = np.repeat(means, step)
+    for i in range(dims):
+        start_index = int(i * segment_length)
+        end_index = int((i + 1) * segment_length)
+        
+        # If we're at the last segment and we have a remainder, include it
+        if i == dims - 1 and end_index < length:
+            end_index = length
+        
+        # Calculate the mean for the segment
+        segment_mean = np.mean(time_series[start_index:end_index])
+        
+        # If not the last segment, append the mean value segment_length times
+        if i != dims - 1:
+            paa_representation += [segment_mean] * (end_index - start_index)
+        else:
+            # On the last segment, ensure we cover the remainder of the series
+            paa_representation += [segment_mean] * (length - start_index)
     
-    return paa
+    return np.array(paa_representation)
 
 def lb_paa(C_bar, U_hat, L_hat):
     """
